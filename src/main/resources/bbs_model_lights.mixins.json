@@ -1,0 +1,8 @@
+{
+  "required": true,
+  "package": "dev.flanzo.bbsmodellights.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "mixins": ["FormMixin"],
+  "client": ["FormEditorMixin"],
+  "injectors": {"defaultRequire": 1}
+}

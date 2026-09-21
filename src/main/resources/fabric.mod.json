@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "id": "bbs_model_lights",
+  "version": "${version}",
+  "name": "BBS Model Lights",
+  "description": "Work-in-progress CML effects port for BBS FS. Not release-validated.",
+  "authors": ["Flanzo"],
+  "contributors": ["McHorse", "ElGatoPro300", "Wemppy"],
+  "license": "MIT",
+  "environment": "*",
+  "mixins": ["bbs_model_lights.mixins.json"],
+  "depends": {"fabricloader": ">=0.16.0", "minecraft": "1.20.4", "java": ">=17", "fabric-api": "*", "bbs": ">=2.5.2-1.20.4 <=2.6.1-1.20.4"}
+}
