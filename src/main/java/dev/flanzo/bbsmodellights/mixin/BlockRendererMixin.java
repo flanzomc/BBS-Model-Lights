@@ -23,7 +23,7 @@ public abstract class BlockRendererMixin extends FormRenderer<BlockForm> {
     private void bml$breaking(MatrixStack stack, VertexConsumerProvider consumers, int light, int overlay, boolean picking, CallbackInfo ci) {
         int stage = LightSettings.of(form).breaking.get();
         if (picking || stage < 1 || stage > 10 || form.blockState.get().getRenderType() != BlockRenderType.MODEL) return;
-        var consumer = new OverlayVertexConsumer(consumers.getBuffer(ModelLoader.BLOCK_DESTRUCTION_RENDER_LAYERS.get(stage - 1)), stack.peek(), 1F);
+        var consumer = new OverlayVertexConsumer(consumers.getBuffer(ModelLoader.BLOCK_DESTRUCTION_RENDER_LAYERS.get(stage - 1)), stack.peek().getPositionMatrix(), stack.peek().getNormalMatrix(), 1F);
         var manager = MinecraftClient.getInstance().getBlockRenderManager();
         manager.getModelRenderer().render(stack.peek(), consumer, form.blockState.get(), manager.getModel(form.blockState.get()), 1F, 1F, 1F, light, overlay);
     }

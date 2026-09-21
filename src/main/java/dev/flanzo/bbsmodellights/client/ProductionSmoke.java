@@ -30,6 +30,7 @@ public final class ProductionSmoke {
                         throw new IllegalStateException("Form settings roundtrip failed");
                     UIModelForm editor = new UIModelForm();
                     new LightPanel(editor).startEdit(loaded);
+                    ProductionBehavior.checkKeyframes(loaded);
                     phase = 1;
                     CreateWorldScreen.create(client, client.currentScreen);
                 } else if (phase == 1 && client.currentScreen instanceof CreateWorldScreen) {
@@ -41,9 +42,10 @@ public final class ProductionSmoke {
                         }
                     }
                 } else if (phase == 2 && client.world != null && client.player != null && ++ticks >= 100) {
+                    if (!ProductionBehavior.tick(client)) return;
                     ScreenshotRecorder.saveScreenshot(client.runDirectory, "world-smoke.png", client.getFramebuffer(), message -> {});
                     Files.writeString(client.runDirectory.toPath().resolve("bml-smoke-passed.txt"),
-                        "PASS: production Fabric launch; effect shader load; form value roundtrip; native editor construction; integrated world entry.\nNOT TESTED: visual effect correctness, keyframe playback, block emission, moving forms, animation.\n");
+                        "PASS: production Fabric launch; shader load; form roundtrip; native editor construction; native keyframe interpolation; world entry; placed emission on/off; moving dynamic light; animated intensity; rendered model and breaking overlay.\nVisual screenshots require separate review.\n");
                     phase = 3;
                     ticks = 0;
                 } else if (phase == 3 && ++ticks > 30) client.scheduleStop();

@@ -1,6 +1,7 @@
 package dev.flanzo.bbsmodellights;
 
 import mchorse.bbs_mod.forms.forms.Form;
+import mchorse.bbs_mod.settings.values.base.BaseValue;
 import mchorse.bbs_mod.settings.values.core.ValueColor;
 import mchorse.bbs_mod.settings.values.core.ValueGroup;
 import mchorse.bbs_mod.settings.values.numeric.ValueBoolean;
@@ -24,9 +25,30 @@ public final class LightSettings extends ValueGroup {
         super("bbs_model_lights");
         add(glow); add(paint); add(brightness); add(contrast); add(saturation); add(hue);
         add(emission); add(emissionIntensity); add(breaking);
+        nameLeaves(this, "bml");
     }
 
-    public static LightSettings of(Form form) { return (LightSettings) form.get("bbs_model_lights"); }
+    public interface Access { LightSettings bml$settings(); }
+    public static LightSettings of(Form form) { return ((Access) form).bml$settings(); }
+
+    /* FS track discovery only visits direct form values. Give every leaf a unique
+       native property ID and attach it directly, retaining groups as Java views. */
+    private static void nameLeaves(ValueGroup group, String prefix) {
+        var children = group.getAll();
+        group.removeAll();
+        for (BaseValue child : children) {
+            if (child instanceof ValueGroup nested) nameLeaves(nested, prefix + "_" + child.getId());
+            else child.setId(prefix + "_" + child.getId());
+            group.add(child);
+        }
+    }
+    public void attach(Form form) { attachGroup(form, this); }
+    private static void attachGroup(Form form, ValueGroup group) {
+        for (BaseValue child : group.getAll()) {
+            if (child instanceof ValueGroup nested) attachGroup(form, nested);
+            else form.add(child);
+        }
+    }
 
     public static final class Effect extends ValueGroup {
         public final ValueFloat intensity = new ValueFloat("intensity", 0F);
