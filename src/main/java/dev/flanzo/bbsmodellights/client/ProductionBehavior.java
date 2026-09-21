@@ -136,7 +136,7 @@ public final class ProductionBehavior {
 
     private static ActorEntity actor(MinecraftClient client,mchorse.bbs_mod.forms.forms.Form form,BlockPos pos,int id) {
         ActorEntity actor=new ActorEntity(BBSMod.ACTOR_ENTITY,client.world);
-        actor.setId(id); actor.setForm(form); actor.setNoGravity(true); actor.setAiDisabled(true);
+        actor.setId(id); actor.setForm(form); actor.setNoGravity(true);
         actor.setPosition(pos.getX()+.5,pos.getY(),pos.getZ()+.5);
         client.world.addEntity(actor);
         return actor;
