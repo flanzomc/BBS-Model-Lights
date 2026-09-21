@@ -10,5 +10,6 @@
   "environment": "*",
   "entrypoints": {"client": ["dev.flanzo.bbsmodellights.client.Effects"], "dynamiclights": ["dev.flanzo.bbsmodellights.client.MovingLights"]},
   "mixins": ["bbs_model_lights.mixins.json"],
+  "jars": [{"file": "META-INF/jars/lambdynamiclights.jar"}],
   "depends": {"fabricloader": ">=0.16.0", "minecraft": "1.20.4", "java": ">=17", "fabric-api": "*", "bbs": ">=2.5.2-1.20.4 <=2.6.1-1.20.4"}
 }

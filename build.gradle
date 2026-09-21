@@ -10,7 +10,6 @@ dependencies {
     modImplementation 'net.fabricmc.fabric-api:fabric-api:0.97.3+1.20.4'
     modImplementation files('libs/bbs-2.5.2-1.20.4.jar')
     modImplementation files('libs/lambdynamiclights.jar')
-    include files('libs/lambdynamiclights.jar')
 }
 java { sourceCompatibility = JavaVersion.VERSION_17; targetCompatibility = JavaVersion.VERSION_17; withSourcesJar() }
 tasks.withType(JavaCompile).configureEach { options.release = 17 }
@@ -18,4 +17,8 @@ processResources {
     inputs.property 'version', project.version
     filesMatching('fabric.mod.json') { expand version: project.version }
 }
-jar { from('LICENSE') }
+jar {
+    from('LICENSE')
+    from('NOTICE.md')
+    from('libs/lambdynamiclights.jar') { into 'META-INF/jars' }
+}
