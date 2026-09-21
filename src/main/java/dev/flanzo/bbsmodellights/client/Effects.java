@@ -18,6 +18,7 @@ public final class Effects implements ClientModInitializer {
     private static final String[] PREFIX = {"Glow", "Paint", "GradeBrightness", "GradeContrast", "GradeSaturation", "GradeHue"};
 
     @Override public void onInitializeClient() {
+        ProductionSmoke.install();
         CoreShaderRegistrationCallback.EVENT.register(context -> context.register(new Identifier("bbs_model_lights", "model"),
             VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, program -> shader = program));
     }

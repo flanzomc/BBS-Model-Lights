@@ -18,11 +18,12 @@ public final class LightSettings extends ValueGroup {
     public final Effect hue = new Effect("hue", false);
     public final ValueBoolean emission = new ValueBoolean("emit_light", false);
     public final ValueInt emissionIntensity = new ValueInt("light_intensity", 15, 0, 15);
+    public final ValueInt breaking = new ValueInt("breaking", 0, 0, 10);
 
     public LightSettings() {
         super("bbs_model_lights");
         add(glow); add(paint); add(brightness); add(contrast); add(saturation); add(hue);
-        add(emission); add(emissionIntensity);
+        add(emission); add(emissionIntensity); add(breaking);
     }
 
     public static LightSettings of(Form form) { return (LightSettings) form.get("bbs_model_lights"); }

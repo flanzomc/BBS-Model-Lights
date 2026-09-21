@@ -29,8 +29,8 @@ public final class LightPanel extends UIFormPanel<Form> {
             enabled.setValue(s.emission.get());
             UITrackpad level = new UITrackpad(v -> s.emissionIntensity.set(v.intValue())).limit(0, 15).integer();
             level.setValue(s.emissionIntensity.get());
-            UITrackpad breaking = new UITrackpad(v -> block.breaking.set(v.intValue())).limit(0, 10).integer();
-            breaking.setValue(block.breaking.get());
+            UITrackpad breaking = new UITrackpad(v -> s.breaking.set(v.intValue())).limit(0, 10).integer();
+            breaking.setValue(s.breaking.get());
             options.add(enabled, UI.labelRow(IKey.constant("Light intensity"), level), UI.labelRow(IKey.constant("Breaking stage"), breaking));
         }
         options.resize();

@@ -28,3 +28,36 @@ jobs:
         with:
           name: development-candidate-not-release-tested
           path: build/libs/*.jar
+  production-smoke:
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        bbs: ['2.5.2', '2.6.1']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: actions/download-artifact@v4
+        with:
+          name: development-candidate-not-release-tested
+          path: build/libs
+      - name: Install graphics runtime
+        run: sudo apt-get update && sudo apt-get install -y xvfb libgl1-mesa-dri
+      - name: Launch remapped JAR in production Minecraft
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+        run: xvfb-run -a python3 scripts/production_launch.py ${{ matrix.bbs }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: production-evidence-${{ matrix.bbs }}
+          path: |
+            production-run/logs/
+            production-run/crash-reports/
+            production-run/screenshots/
+            production-run/bml-smoke-passed.txt
