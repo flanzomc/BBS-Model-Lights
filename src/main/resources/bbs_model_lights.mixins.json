@@ -3,6 +3,6 @@
   "package": "dev.flanzo.bbsmodellights.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": ["FormMixin"],
-  "client": ["FormEditorMixin"],
+  "client": ["FormEditorMixin", "BBSShadersMixin", "ShaderMixin", "ModelRendererMixin", "QueueMixin"],
   "injectors": {"defaultRequire": 1}
 }

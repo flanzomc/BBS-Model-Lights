@@ -1,4 +1,4 @@
-plugins { id 'fabric-loom' version '1.10.5' }
+plugins { id 'fabric-loom' version '1.15.5' }
 version = '0.1.0-alpha.1'
 group = 'dev.flanzo'
 base { archivesName = 'bbs-model-lights' }
