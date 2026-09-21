@@ -22,6 +22,8 @@ jobs:
         run: |
           mkdir -p libs
           curl --fail --location --retry 3 https://cdn.modrinth.com/data/ZeRO0IDA/versions/qGbGyKHH/bbs-2.5.2-1.20.4.jar -o libs/bbs-2.5.2-1.20.4.jar
+          curl --fail --location --retry 3 'https://cdn.modrinth.com/data/yBW8D80W/versions/mrQ8ZiyU/lambdynamiclights-2.3.4%2B1.20.4.jar' -o libs/lambdynamiclights.jar
+          echo 'b44b10647f170732825b28d8ff44735ae31e3837  libs/lambdynamiclights.jar' | sha1sum --check
       - name: Compile and remap (not a gameplay test)
         run: gradle --no-daemon build --stacktrace
       - uses: actions/upload-artifact@v4

@@ -60,7 +60,8 @@ public final class Effects implements ClientModInitializer {
                 .translate(-m.px.get(), -m.py.get(), -m.pz.get()).invert();
             program.getUniform(inv).set(inverse);
             program.getUniform(active).set(isActive ? 1F : 0F);
-            program.getUniform(half).set(Math.abs(m.sx.get())*0.5F, Math.abs(m.sy.get())*0.5F, Math.abs(m.sz.get())*0.5F);
+            program.getUniform(i < 2 ? p + "MaskBottomAnchored" : p + "BottomAnchored").set(1F);
+            program.getUniform(half).set(m.sx.get()==0 ? 0.001F : m.sx.get(), m.sy.get()==0 ? 0.001F : m.sy.get(), m.sz.get()==0 ? 0.001F : m.sz.get());
             program.getUniform(shape).set(m.shape.get().floatValue());
         }
     }

@@ -95,7 +95,7 @@ api_file = next(f for f in api['files'] if f['primary'])
 download(api_file['url'], mods / 'fabric-api.jar', api_file['hashes']['sha1'])
 jar = Path('build/libs/bbs-model-lights-0.1.0-alpha.1.jar')
 shutil.copy2(jar, mods / jar.name)
-(root / 'options.txt').write_text('onboardAccessibility:false\nrenderDistance:4\nsimulationDistance:4\nmaxFps:30\nsoundCategory_master:0.0\n')
+(root / 'options.txt').write_text('onboardAccessibility:false\nrenderDistance:4\nsimulationDistance:5\nmaxFps:30\nsoundCategory_master:0.0\n')
 args = ['java', '-Xmx2G', '-Dbml.smoke=true', '-Dfabric.development=false',
         '-Djava.library.path=' + str(natives), '-cp', os.pathsep.join(classpath), profile['mainClass'],
         '--username', 'BMLTest', '--version', '1.20.4', '--gameDir', str(root),
