@@ -1,0 +1,43 @@
+name: Verify build and launch prerequisites
+on:
+  push:
+    paths:
+      - '.github/workflows/preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.14.3'
+      - name: Install graphical launch prerequisites
+        run: sudo apt-get update && sudo apt-get install -y xvfb mesa-utils libgl1-mesa-dri
+      - name: Check Java and software OpenGL
+        run: |
+          javac -version
+          gradle --version
+          xvfb-run -a glxinfo -B
+      - name: Inspect exact production BBS APIs
+        run: |
+          mkdir -p evidence
+          curl --fail --location --retry 3 https://cdn.modrinth.com/data/ZeRO0IDA/versions/qGbGyKHH/bbs-2.5.2-1.20.4.jar -o evidence/bbs-2.5.2.jar
+          curl --fail --location --retry 3 https://cdn.modrinth.com/data/ZeRO0IDA/versions/Jg7pltPc/bbs-2.6.1-1.20.4.jar -o evidence/bbs-2.6.1.jar
+          for version in 2.5.2 2.6.1; do
+            unzip -p evidence/bbs-$version.jar fabric.mod.json > evidence/fabric-$version.json
+            javap -p -classpath evidence/bbs-$version.jar mchorse.bbs_mod.forms.forms.Form mchorse.bbs_mod.forms.forms.BlockForm mchorse.bbs_mod.ui.forms.editors.forms.UIForm mchorse.bbs_mod.forms.renderers.FormRenderer mchorse.bbs_mod.cubic.render.vao.ModelVAORenderer > evidence/api-$version.txt
+          done
+      - uses: actions/upload-artifact@v4
+        with:
+          name: preflight-api-evidence
+          path: |
+            evidence/*.txt
+            evidence/*.json
