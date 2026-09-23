@@ -290,43 +290,51 @@ vec3 bbsApplyGlow(vec3 color, float strength)
 }
 
 
-uniform int PassMode;
-void main() {
+void main()
+{
     vec4 texSample = texture(Sampler0, texCoord0);
-    if (texSample.a < 0.1) discard;
 
-    float gm = bbsPaintEffectMask(formRootPos, GlowEffectInverse, GlowEffectActive, GlowMaskHalf, GlowMaskBottomAnchored, GlowMaskShape);
-
-    /*
-     * Pass 3 is the CML-style positive emission redraw. The skin contributes
-     * only its alpha silhouette; rawVertexColor preserves per-group tint and
-     * opacity without applying diffuse/lightmap shading to the emitted light.
-     */
-    if (PassMode == 3)
+    if (texSample.a < 0.1)
     {
-        float strength = max(GlowingColor.a, 0.0) * gm;
-        float alpha = texSample.a * rawVertexColor.a * ColorModulator.a;
-
-        if (strength < 0.001 || alpha < 0.001)
-        {
-            discard;
-        }
-
-        vec3 emission = GlowingColor.rgb * rawVertexColor.rgb * strength;
-        fragColor = linear_fog(vec4(emission, alpha), vertexDistance, FogStart, FogEnd, FogColor);
-
-        return;
+        discard;
     }
 
     vec4 color = texSample * vertexColor * ColorModulator;
-    if (PassMode == 1 && color.a < 0.999) discard;
-    if (PassMode == 2 && color.a >= 0.999) discard;
+
     color.rgb = mix(overlayColor.rgb, color.rgb, overlayColor.a);
+
+    float paintMask = bbsPaintEffectMask(
+        formRootPos,
+        PaintEffectInverse,
+        PaintEffectActive,
+        PaintMaskHalf,
+        PaintMaskBottomAnchored,
+        PaintMaskShape
+    );
+
+    if (PaintColor.a > 0.001)
+    {
+        color.rgb = mix(color.rgb, PaintColor.rgb, clamp(PaintColor.a, 0.0, 1.0) * paintMask);
+    }
+    else if (PaintColor.a < -0.001)
+    {
+        color.rgb = mix(color.rgb, color.rgb * max(0.0, 1.0 + PaintColor.a), paintMask);
+    }
+
+    /* Current CML ordering: lighting first, Glow second. */
     color.rgb *= lightMapColor.rgb;
-    float pm = bbsPaintEffectMask(formRootPos, PaintEffectInverse, PaintEffectActive, PaintMaskHalf, PaintMaskBottomAnchored, PaintMaskShape);
-    if (PaintColor.a > 0.001) color.rgb = mix(color.rgb, PaintColor.rgb, clamp(PaintColor.a,0.0,1.0)*pm);
-    else if (PaintColor.a < -0.001) color.rgb = mix(color.rgb, color.rgb*max(0.0,1.0+PaintColor.a), pm);
-    color.rgb = bbsApplyGlow(color.rgb, GlowingColor.a*gm);
+
+    float glowMask = bbsPaintEffectMask(
+        formRootPos,
+        GlowEffectInverse,
+        GlowEffectActive,
+        GlowMaskHalf,
+        GlowMaskBottomAnchored,
+        GlowMaskShape
+    );
+
+    color.rgb = bbsApplyGlow(color.rgb, GlowingColor.a * glowMask);
     color.rgb = bbsApplyFormColorGrade(color.rgb, formRootPos);
-    fragColor = linear_fog(color,vertexDistance,FogStart,FogEnd,FogColor);
+
+    fragColor = linear_fog(color, vertexDistance, FogStart, FogEnd, FogColor);
 }
