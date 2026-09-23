@@ -130,7 +130,7 @@ public final class ProductionBehavior {
             stage=5; ticks=0;
         } else if(stage==5 && ticks>=40) {
             require(LambDynLights.get().getDynamicLightLevel(moving.getBlockPos().up())>10,"Light reaches new actor position");
-            require(Effects.glowOverlayDraws > 0, "Positive glow additive pass executed: " + Effects.glowOverlayDraws);
+            require(Effects.glowShaderUploads > 0, "CML-style Glow main shader executed: " + Effects.glowShaderUploads);
             animation.applyProperties(movingForm,20);
             screenshot(client,"03-glow-green.png");
             LightSettings.of(model).glow.intensity.set(0F);
