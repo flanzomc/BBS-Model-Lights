@@ -34,7 +34,7 @@ out vec4 normal;
 
 void main()
 {
-    formRootPos = (FormRootInverse * ModelViewMat * vec4(Position,1.0)).xyz;
+    formRootPos = (FormRootInverse * vec4(Position, 1.0)).xyz;
     rawVertexColor = Color;
     gl_Position = ProjMat * ModelViewMat * vec4(Position, 1.0);
 
