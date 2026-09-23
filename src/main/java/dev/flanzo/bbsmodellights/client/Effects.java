@@ -19,6 +19,15 @@ import org.joml.Matrix4f;
 public final class Effects implements ClientModInitializer {
     public static ShaderProgram shader;
     public static Snapshot current;
+
+    /**
+     * CML does not depend on the normal model shader for every positive glow.
+     * CPU/shape-key and shader-pack paths can bypass BBSShaders.getModel(), so
+     * positive emission is redrawn in a dedicated additive pass.
+     */
+    public static boolean glowOverlay;
+    public static int glowOverlayDraws;
+
     private static final String[] PREFIX = {"Glow", "Paint", "GradeBrightness", "GradeContrast", "GradeSaturation", "GradeHue"};
 
     @Override public void onInitializeClient() {
@@ -39,6 +48,9 @@ public final class Effects implements ClientModInitializer {
 
     public static void upload(ShaderProgram program) {
         if (program != shader) return;
+
+        set1(program, "PassMode", glowOverlay ? 3F : 0F);
+
         Snapshot s = current;
         if (s == null) {
             vec4(program, "GlowingColor", 1, 1, 1, 0);
@@ -46,11 +58,32 @@ public final class Effects implements ClientModInitializer {
             vec4(program, "FormColorGrade", 0, 0, 0, 0);
             return;
         }
+
         LightSettings v = s.values;
         program.getUniform("FormRootInverse").set(s.rootInverse);
-        vec4(program, "GlowingColor", v.glow.color.get().r, v.glow.color.get().g, v.glow.color.get().b, v.glow.intensity.get());
-        vec4(program, "PaintColor", v.paint.color.get().r, v.paint.color.get().g, v.paint.color.get().b, v.paint.intensity.get());
-        vec4(program, "FormColorGrade", v.brightness.intensity.get(), v.contrast.intensity.get(), v.hue.intensity.get(), v.saturation.intensity.get());
+
+        /*
+         * Positive glow is deliberately stripped from the ordinary pass and
+         * emitted by ModelInstanceMixin using SRC_ALPHA/ONE. This mirrors CML's
+         * deferred/CPU emission path and makes it independent of whether FS
+         * selected BBSShaders.getModel() or vanilla entity_translucent.
+         *
+         * Negative glow remains on the ordinary BBS model shader path because
+         * it is a darken operation rather than additive emission.
+         */
+        float glow = v.glow.intensity.get();
+        float shaderGlow = glowOverlay ? Math.max(glow, 0F) : Math.min(glow, 0F);
+
+        vec4(program, "GlowingColor", v.glow.color.get().r, v.glow.color.get().g, v.glow.color.get().b, shaderGlow);
+
+        if (glowOverlay) {
+            vec4(program, "PaintColor", 1, 1, 1, 0);
+            vec4(program, "FormColorGrade", 0, 0, 0, 0);
+        } else {
+            vec4(program, "PaintColor", v.paint.color.get().r, v.paint.color.get().g, v.paint.color.get().b, v.paint.intensity.get());
+            vec4(program, "FormColorGrade", v.brightness.intensity.get(), v.contrast.intensity.get(), v.hue.intensity.get(), v.saturation.intensity.get());
+        }
+
         LightSettings.Effect[] effects = {v.glow, v.paint, v.brightness, v.contrast, v.saturation, v.hue};
         for (int i = 0; i < effects.length; i++) {
             LightSettings.Mask m = effects[i].transform;
@@ -71,6 +104,12 @@ public final class Effects implements ClientModInitializer {
             program.getUniform(shape).set(m.shape.get().floatValue());
         }
     }
+
+    private static void set1(ShaderProgram p, String name, float value) {
+        GlUniform u = p.getUniform(name);
+        if (u != null) u.set(value);
+    }
+
     private static void vec4(ShaderProgram p, String name, float x, float y, float z, float w) {
         GlUniform u = p.getUniform(name);
         if (u != null) u.set(x,y,z,w);
