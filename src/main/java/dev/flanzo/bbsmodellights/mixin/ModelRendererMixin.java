@@ -32,7 +32,7 @@ public abstract class ModelRendererMixin extends FormRenderer<ModelForm> {
     }
     @Unique private void bml$begin(MatrixStack stack, StencilMap stencil) {
         bml$previous = Effects.current;
-        Effects.current = stencil == null ? Effects.capture(form, stack) : null;
+        Effects.current = stencil == null ? Effects.capture(form) : null;
     }
     @Inject(method="renderModel", at=@At("RETURN"))
     private void bml$end(CallbackInfo ci) { Effects.current = bml$previous; }
