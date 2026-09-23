@@ -1,8 +1,13 @@
 package dev.flanzo.bbsmodellights.client;
 
 import dev.flanzo.bbsmodellights.LightSettings;
+import dev.flanzo.bbsmodellights.form.LightForm;
 import dev.flanzo.bbsmodellights.ui.LightPanel;
+import dev.flanzo.bbsmodellights.ui.UILightForm;
+import mchorse.bbs_mod.BBSMod;
 import mchorse.bbs_mod.forms.forms.ModelForm;
+import mchorse.bbs_mod.resources.Link;
+import mchorse.bbs_mod.ui.forms.editors.UIFormEditor;
 import mchorse.bbs_mod.ui.forms.editors.forms.UIModelForm;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.client.gui.screen.TitleScreen;
@@ -30,6 +35,23 @@ public final class ProductionSmoke {
                         throw new IllegalStateException("Form settings roundtrip failed");
                     UIModelForm editor = new UIModelForm();
                     new LightPanel(editor).startEdit(loaded);
+
+                    if (!(BBSMod.getForms().create(Link.bbs("light")) instanceof LightForm))
+                        throw new IllegalStateException("bbs:light form was not registered");
+
+                    LightForm light = new LightForm();
+                    light.enabled.set(true);
+                    light.level.set(11);
+                    LightForm lightLoaded = new LightForm();
+                    lightLoaded.fromData(light.toData());
+                    if (!lightLoaded.enabled.get() || lightLoaded.level.get() != 11)
+                        throw new IllegalStateException("LightForm roundtrip failed");
+
+                    var lightEditor = UIFormEditor.createPanel(lightLoaded);
+                    if (!(lightEditor instanceof UILightForm))
+                        throw new IllegalStateException("LightForm native editor was not registered");
+                    new LightPanel(lightEditor).startEdit(lightLoaded);
+
                     ProductionBehavior.checkKeyframes(loaded);
                     phase = 1;
                     CreateWorldScreen.create(client, client.currentScreen);
@@ -45,7 +67,7 @@ public final class ProductionSmoke {
                     if (!ProductionBehavior.tick(client)) return;
                     ScreenshotRecorder.saveScreenshot(client.runDirectory, "world-smoke.png", client.getFramebuffer(), message -> {});
                     Files.writeString(client.runDirectory.toPath().resolve("bml-smoke-passed.txt"),
-                        "PASS: production Fabric launch; shader load; form roundtrip; native editor construction; native keyframe interpolation; world entry; placed emission on/off; moving dynamic light; animated intensity; rendered model and breaking overlay.\nVisual screenshots require separate review.\n");
+                        "PASS: production Fabric launch; shader load; form roundtrip; CML-compatible bbs:light registration/editor; native keyframe interpolation; world entry; placed BlockForm + LightForm emission on/off; moving LightForm dynamic light; animated light level; rendered model and breaking overlay.\nVisual screenshots require separate review.\n");
                     phase = 3;
                     ticks = 0;
                 } else if (phase == 3 && ++ticks > 30) client.scheduleStop();

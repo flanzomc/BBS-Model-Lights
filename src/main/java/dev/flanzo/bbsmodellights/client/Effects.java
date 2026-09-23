@@ -2,7 +2,11 @@ package dev.flanzo.bbsmodellights.client;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.flanzo.bbsmodellights.LightSettings;
+import dev.flanzo.bbsmodellights.form.LightForm;
+import dev.flanzo.bbsmodellights.ui.UILightForm;
+import mchorse.bbs_mod.forms.FormUtilsClient;
 import mchorse.bbs_mod.forms.forms.Form;
+import mchorse.bbs_mod.ui.forms.editors.UIFormEditor;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.CoreShaderRegistrationCallback;
 import net.minecraft.client.gl.ShaderProgram;
@@ -18,6 +22,8 @@ public final class Effects implements ClientModInitializer {
     private static final String[] PREFIX = {"Glow", "Paint", "GradeBrightness", "GradeContrast", "GradeSaturation", "GradeHue"};
 
     @Override public void onInitializeClient() {
+        FormUtilsClient.register(LightForm.class, LightFormRenderer::new);
+        UIFormEditor.register(LightForm.class, UILightForm::new);
         ProductionSmoke.install();
         CoreShaderRegistrationCallback.EVENT.register(context -> context.register(new Identifier("bbs_model_lights", "model"),
             VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL, program -> shader = program));

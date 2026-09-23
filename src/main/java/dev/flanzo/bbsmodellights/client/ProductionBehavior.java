@@ -2,6 +2,7 @@ package dev.flanzo.bbsmodellights.client;
 
 import dev.flanzo.bbsmodellights.LightSettings;
 import dev.flanzo.bbsmodellights.PlacedLight;
+import dev.flanzo.bbsmodellights.form.LightForm;
 import dev.lambdaurora.lambdynlights.LambDynLights;
 import mchorse.bbs_mod.BBSMod;
 import mchorse.bbs_mod.BBSModClient;
@@ -23,7 +24,7 @@ public final class ProductionBehavior {
     private static BlockPos origin;
     private static CompletableFuture<?> serverTask;
     private static ActorEntity moving, modelActor;
-    private static BlockForm movingForm;
+    private static LightForm movingForm;
     private static ModelForm model;
     private static FormProperties animation;
     private static double initialLight;
@@ -64,33 +65,50 @@ public final class ProductionBehavior {
                 entity.getProperties().setForm(form);
                 entity.markDirty();
                 world.updateListeners(origin, world.getBlockState(origin), world.getBlockState(origin), 3);
+
+                /* CML's dedicated bbs:light form: invisible, but it must light a
+                   placed model block through the same native block-light state. */
+                BlockPos lightPos = origin.north(2);
+                world.setBlockState(lightPos, BBSMod.MODEL_BLOCK.getDefaultState());
+                var lightEntity = (ModelBlockEntity) world.getBlockEntity(lightPos);
+                LightForm light = new LightForm();
+                light.level.set(9);
+                lightEntity.getProperties().setForm(light);
+                lightEntity.markDirty();
+                world.updateListeners(lightPos, world.getBlockState(lightPos), world.getBlockState(lightPos), 3);
             });
             stage=1; ticks=0;
         } else if (stage == 1 && ticks >= 80) {
             serverTask = client.getServer().submit(() -> {
                 var world=client.getServer().getOverworld();
-                require(world.getBlockState(origin).get(PlacedLight.LEVEL)==12, "Placed intensity property");
-                require(world.getLightLevel(LightType.BLOCK, origin.east())>=11, "Placed light reaches neighbor");
+                require(world.getBlockState(origin).get(PlacedLight.LEVEL)==12, "Placed block intensity property");
+                require(world.getLightLevel(LightType.BLOCK, origin.east())>=11, "Placed block light reaches neighbor");
+
+                BlockPos lightPos = origin.north(2);
+                require(world.getBlockState(lightPos).get(PlacedLight.LEVEL)==9, "Placed LightForm intensity property");
+                require(world.getLightLevel(LightType.BLOCK, lightPos.east())>=8, "Placed LightForm reaches neighbor");
+
                 var form=((ModelBlockEntity)world.getBlockEntity(origin)).getProperties().getForm();
                 LightSettings.of(form).emission.set(false);
+                var light=((ModelBlockEntity)world.getBlockEntity(lightPos)).getProperties().getForm();
+                ((LightForm) light).enabled.set(false);
             });
             stage=2; ticks=0;
         } else if (stage == 2 && ticks >= 60) {
             serverTask = client.getServer().submit(() -> {
                 var world=client.getServer().getOverworld();
-                require(world.getBlockState(origin).get(PlacedLight.LEVEL)==0, "Emission toggle clears state");
-                require(world.getLightLevel(LightType.BLOCK,origin.east())==0, "Emission toggle clears world light");
+                require(world.getBlockState(origin).get(PlacedLight.LEVEL)==0, "Block emission toggle clears state");
+                require(world.getBlockState(origin.north(2)).get(PlacedLight.LEVEL)==0, "LightForm enabled toggle clears state");
+                require(world.getLightLevel(LightType.BLOCK,origin.east())==0, "Placed lights clear world light");
             });
             model=new ModelForm(); model.model.set("player/steve");
             require(BBSModClient.getModels().loadModel("player/steve") != null, "Real BBS model loads");
             model.lighting.set(0F);
             modelActor=actor(client,model,origin.add(-2,0,0),-5000);
-            movingForm=new BlockForm(); movingForm.blockState.set(Blocks.GLOWSTONE.getDefaultState());
-            LightSettings.of(movingForm).emission.set(true);
-            LightSettings.of(movingForm).breaking.set(5);
+            movingForm=new LightForm(); movingForm.level.set(15);
             moving=actor(client,movingForm,origin.add(2,0,0),-5001);
             animation=new FormProperties("animated light");
-            var channel=animation.create(LightSettings.of(movingForm).emissionIntensity);
+            var channel=animation.create(movingForm.level);
             require(channel!=null,"Emission keyframe track");
             channel.insert(0,15); channel.insert(20,3);
             stage=3; ticks=0;
@@ -121,7 +139,7 @@ public final class ProductionBehavior {
             double dim=LambDynLights.get().getDynamicLightLevel(moving.getBlockPos().up());
             require(dim>0 && dim<4,"Keyframed light intensity updates: "+dim);
             screenshot(client,"04-desaturated.png");
-            LightSettings.of(movingForm).emission.set(false);
+            movingForm.enabled.set(false);
             LightSettings.of(model).saturation.intensity.set(0F);
             LightSettings.of(model).paint.intensity.set(1F);
             LightSettings.of(model).paint.transform.sy.set(.45F);
