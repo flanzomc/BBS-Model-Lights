@@ -49,7 +49,7 @@ public final class Effects implements ClientModInitializer {
     public static void upload(ShaderProgram program) {
         if (program != shader) return;
 
-        set1(program, "PassMode", glowOverlay ? 3F : 0F);
+        setInt(program, "PassMode", glowOverlay ? 3 : 0);
 
         Snapshot s = current;
         if (s == null) {
@@ -105,7 +105,7 @@ public final class Effects implements ClientModInitializer {
         }
     }
 
-    private static void set1(ShaderProgram p, String name, float value) {
+    private static void setInt(ShaderProgram p, String name, int value) {
         GlUniform u = p.getUniform(name);
         if (u != null) u.set(value);
     }
