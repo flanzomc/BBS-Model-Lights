@@ -155,14 +155,6 @@
       ]
     },
     {
-      "name": "PassMode",
-      "type": "int",
-      "count": 1,
-      "values": [
-        0
-      ]
-    },
-    {
       "name": "NormalMat",
       "type": "matrix3x3",
       "count": 9,
@@ -577,4 +569,4 @@
       ]
     }
   ]
-}
+}\n
