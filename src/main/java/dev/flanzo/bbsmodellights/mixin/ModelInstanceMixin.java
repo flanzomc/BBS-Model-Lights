@@ -4,6 +4,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import dev.flanzo.bbsmodellights.client.Effects;
 import mchorse.bbs_mod.cubic.ModelInstance;
 import mchorse.bbs_mod.obj.shapes.ShapeKeys;
+import mchorse.bbs_mod.resources.Link;
 import mchorse.bbs_mod.ui.framework.elements.utils.StencilMap;
 import mchorse.bbs_mod.utils.colors.Color;
 import net.minecraft.client.gl.ShaderProgram;
@@ -16,6 +17,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 /**
@@ -42,6 +44,7 @@ public abstract class ModelInstanceMixin {
         int overlay,
         StencilMap stencilMap,
         ShapeKeys shapeKeys,
+        Function<String, Link> textureResolver,
         CallbackInfo ci
     ) {
         if (bml$emittingGlow || stencilMap != null || Effects.current == null || Effects.shader == null) {
@@ -95,7 +98,8 @@ public abstract class ModelInstanceMixin {
                 LightmapTextureManager.MAX_LIGHT_COORDINATE,
                 overlay,
                 null,
-                shapeKeys
+                shapeKeys,
+                textureResolver
             );
         } finally {
             Effects.glowOverlay = false;
